@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration;
@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Speech.Synthesis;
 using VILMS_BI;
 using VILMS_CM;
+using System.Threading;
 
 namespace VILMS_UI_Win
 {
@@ -25,6 +26,7 @@ namespace VILMS_UI_Win
         public FrmQuestion(Topics lobjTopics)
         {
             InitializeComponent();
+            cts = new CancellationTokenSource();  
             objTopics = lobjTopics;
             CourseID = lobjTopics.CourseID.ToString();
             LessonID = lobjTopics.LessonID.ToString();
@@ -54,7 +56,7 @@ namespace VILMS_UI_Win
         int attempts = 0;
         string FeedBackCorrectAnswer = string.Empty;
         SpeechSynthesizer speaker = null;
-
+        CancellationTokenSource cts;  
         #endregion
 
         #region Methods
@@ -100,12 +102,20 @@ namespace VILMS_UI_Win
                 txtAnswer.TextChanged += txtAnswer_TextChanged;
                 numberoflines = txtquestion.Lines.Count();
                 txtquestion.Focus();
-                speaker.Speak(speak);
+                //speaker.Speak(speak);
             }
             catch (Exception ex)
             {
 
             }
+        }
+
+      
+        public async Task<string> Speak(string speak)
+        {
+            SpeechSynthesizer ss = new SpeechSynthesizer();
+            ss.Speak(speak);
+            return "1";
         }
 
         private void FrmLoadTopic()
@@ -231,7 +241,7 @@ namespace VILMS_UI_Win
             }
         }
 
-        private void txtAnswer_TextChanged(object sender, EventArgs e)
+        private async void txtAnswer_TextChanged(object sender, EventArgs e)
         {
             try
             {
@@ -245,12 +255,14 @@ namespace VILMS_UI_Win
                             speak = Correctkey + Typekey + Spacekey;
                         else
                             speak = Correctkey + Typekey + Answerlist[charindex].ToString();
-                        speaker.Speak(speak);
+                        //speaker.Speak(speak);
+                        await Task.Run(() => Speak(speak));
                     }
                     else
                         if (QuestionsLiist.Count > index)
                         {
-                            speaker.Speak(FeedBackCorrectAnswer);
+                            //speaker.Speak(FeedBackCorrectAnswer);
+                            await Task.Run(() => Speak(speak));
                             index += 1;
                             if (index == QuestionsLiist.Count)
                                 FrmLoadTopic();
@@ -264,7 +276,8 @@ namespace VILMS_UI_Win
                         speak = wrongkey + Typekey + Spacekey;
                     else
                         speak = wrongkey + Typekey + Answerlist[charindex].ToString();
-                    speaker.Speak(speak);
+                    //speaker.Speak(speak);
+                    await Task.Run(() => Speak(speak));
                 }
             }
             catch (Exception ex)
