@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -13,23 +13,28 @@ namespace VILMS_DA
         /// <summary>
         /// Constructor
         /// </summary>
-        public LoginUserDatavalidation()
+        public LoginUserDatavalidation(string lconstring)
         {
+            constring = lconstring;
+            o_dbManger = new MysqldbManager(constring);
         }
         #endregion
 
         #region Variables
-        private MysqldbManager o_dbManger = new MysqldbManager();
+        string constring = string.Empty;
+        private MysqldbManager o_dbManger = null;
         #endregion
 
         #region Methods
-        public bool CheckUser(string userName, string password)
+        public bool CheckUser(string userName, string password, out string UserId)
         {
             try
             {
-                object value = o_dbManger.GetSingleValue("SELECT COUNT(*) FROM m_user WHERE User_name='" + userName + "' AND Password='" + password + "' AND Status='1'");
+                UserId = "0";
+                object value = o_dbManger.GetSingleValue("SELECT ID FROM m_user WHERE User_name='" + userName + "' AND Password='" + password + "' AND Status='1'");
                 if (value != DBNull.Value)
                 {
+                    UserId = value.ToString();
                     if (Convert.ToInt32(value) >= 1)
                         return true;
                     return false;
@@ -101,6 +106,18 @@ namespace VILMS_DA
                 if (ds != null)
                     return ds;
                 return null;
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public bool InsertUserAnswer(string Query, out int noOfRowsaffected)
+        {
+            try
+            {
+                return (o_dbManger.RunQuery(Query, out noOfRowsaffected));
             }
             catch (Exception ex)
             {
