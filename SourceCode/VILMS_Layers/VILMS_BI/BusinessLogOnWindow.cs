@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -17,7 +17,7 @@ namespace VILMS_BI
         /// </summary>
         public BusinessLogOnWindow()
         {
-            o_loginDataValidation = new LoginUserDatavalidation();
+            o_loginDataValidation = new LoginUserDatavalidation(Globals.connectionString);
         }
         #endregion
 
@@ -30,15 +30,17 @@ namespace VILMS_BI
         #endregion
 
         #region Methods
-        public bool IsValidUser(string user, string password)
+        public bool IsValidUser(string user, string password, out string UserId)
         {
+            string lUserId = string.Empty;
             try
             {
+                UserId = "0";
                 if (string.IsNullOrEmpty(user))
                     return false;
                 if (string.IsNullOrEmpty(password))
                     return false;
-                return o_loginDataValidation.CheckUser(user, password);
+                return o_loginDataValidation.CheckUser(user, password, out UserId);
             }
             catch (Exception ex)
             {
@@ -177,6 +179,18 @@ namespace VILMS_BI
             distitle.Add(2, "Select Lessons-LMS Client");
             distitle.Add(3, "Select Topics-LMS Client");
             return distitle;
+        }
+
+        public bool InsertUserAnswer(string Query, out int noOfRowsaffected)
+        {
+            try
+            {
+                return (o_loginDataValidation.InsertUserAnswer(Query, out noOfRowsaffected));
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
         #endregion
     }
