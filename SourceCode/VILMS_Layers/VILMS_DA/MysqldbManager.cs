@@ -1,4 +1,3 @@
-﻿using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -6,6 +5,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.SQLite;
 
 namespace VILMS_DA
 {
@@ -17,35 +17,42 @@ namespace VILMS_DA
         /// </summary>
         public MysqldbManager()
         {
-            constring = ConfigurationManager.AppSettings["ConString"];
+        }
+
+        /// <summary>
+        /// Initialization of class and Constructor initialization.
+        /// </summary>
+        /// <param name="lconstring">string</param>
+        public MysqldbManager(string lconstring)
+        {
+            constring = "data source=" + lconstring;
         }
         #endregion
 
         #region Variables
         string constring = string.Empty;
-        private static MysqldbManager o_instance;
         #endregion
 
         #region Methods
         public DataSet GetDataInDataSet(string query)
         {
-            MySqlConnection con = null;
-            MySqlCommand cmd = null;
-            MySqlDataAdapter adaptar = null;
+            SQLiteConnection con = null;
+            SQLiteCommand cmd = null;
+            SQLiteDataAdapter adaptar = null;
             DataSet dsResult = new DataSet();
             try
             {
-                con = new MySqlConnection(constring);
+                con = new SQLiteConnection(constring);
                 if (con != null && con.State == ConnectionState.Closed)
                     con.Open();
-                cmd = new MySqlCommand
+                cmd = new SQLiteCommand
                 {
                     CommandText = query,
                     CommandType = System.Data.CommandType.Text,
                     Connection = con,
                     CommandTimeout = 50000
                 };
-                adaptar = new MySqlDataAdapter(cmd);
+                adaptar = new SQLiteDataAdapter(cmd);
                 adaptar.Fill(dsResult);
                 return dsResult;
             }
@@ -61,19 +68,18 @@ namespace VILMS_DA
                     cmd.Dispose();
             }
         }
-        
+
         public object GetSingleValue(string query)
         {
-            MySqlConnection con = null;
-            MySqlCommand cmd = null;
+            SQLiteConnection con = null;
+            SQLiteCommand cmd = null;
             object value = null;
             try
             {
-                con = new MySqlConnection(constring);
+                con = new SQLiteConnection(constring);
                 con.Open();
-
                 {
-                    cmd = new MySqlCommand
+                    cmd = new SQLiteCommand
                     {
                         CommandText = query,
                         CommandType = CommandType.Text,
@@ -98,18 +104,18 @@ namespace VILMS_DA
                     cmd.Dispose();
             }
         }
-        
+
         public bool RunQuery(string query, out int noOfRowsaffected)
         {
             noOfRowsaffected = 0;
-            MySqlConnection con = null;
-            MySqlCommand cmd = null;
+            SQLiteConnection con = null;
+            SQLiteCommand cmd = null;
             try
             {
-                con = new MySqlConnection(constring);
-                cmd = new MySqlCommand();
+                con = new SQLiteConnection(constring);
+                cmd = new SQLiteCommand();
                 con.Open();
-                cmd = new MySqlCommand
+                cmd = new SQLiteCommand
                 {
                     CommandText = query,
                     CommandType = CommandType.Text,
@@ -131,24 +137,24 @@ namespace VILMS_DA
                     cmd.Dispose();
             }
         }
-        
-        public bool ExecuteSpForMultipleCommands(List<MySqlCommand> commands)
+
+        public bool ExecuteSpForMultipleCommands(List<SQLiteCommand> commands)
         {
             int totalNoOfRowsaffected;
             return ExecuteSpForMultipleCommands(commands, out totalNoOfRowsaffected);
         }
-        
-        public bool ExecuteSpForMultipleCommands(List<MySqlCommand> commands, out int totalNoOfRowsaffected)
+
+        public bool ExecuteSpForMultipleCommands(List<SQLiteCommand> commands, out int totalNoOfRowsaffected)
         {
             totalNoOfRowsaffected = 0;
-            MySqlConnection con = null;
-            MySqlTransaction transaction = null;
+            SQLiteConnection con = null;
+            SQLiteTransaction transaction = null;
             try
             {
-                con = new MySqlConnection(constring);
+                con = new SQLiteConnection(constring);
                 con.Open();
                 transaction = con.BeginTransaction();
-                foreach (MySqlCommand command in commands)
+                foreach (SQLiteCommand command in commands)
                 {
                     command.Connection = con;
                     command.Transaction = transaction;
@@ -182,17 +188,17 @@ namespace VILMS_DA
                     transaction.Dispose();
             }
         }
-        
-        public bool ExecuteSp(MySqlCommand command, out int noOfRowsaffected)
+
+        public bool ExecuteSp(SQLiteCommand command, out int noOfRowsaffected)
         {
             noOfRowsaffected = 0;
-            MySqlConnection con = null;
-            MySqlTransaction transaction = null;
+            SQLiteConnection con = null;
+            SQLiteTransaction transaction = null;
             try
             {
                 if (command != null)
                 {
-                    con = new MySqlConnection(constring);
+                    con = new SQLiteConnection(constring);
                     con.Open();
                     transaction = con.BeginTransaction();
                     command.Connection = con;
@@ -228,17 +234,17 @@ namespace VILMS_DA
             }
             return false;
         }
-        
-        public DataSet ExecuteSpFillDataSet(MySqlCommand command)
+
+        public DataSet ExecuteSpFillDataSet(SQLiteCommand command)
         {
-            MySqlConnection con = null;
+            SQLiteConnection con = null;
             DataSet dsResult = new DataSet();
             try
             {
-                con = new MySqlConnection(constring);
+                con = new SQLiteConnection(constring);
                 con.Open();
                 command.Connection = con;
-                var adaptar = new MySqlDataAdapter(command);
+                var adaptar = new SQLiteDataAdapter(command);
                 adaptar.Fill(dsResult);
                 return dsResult;
             }
@@ -254,27 +260,27 @@ namespace VILMS_DA
                     command.Dispose();
             }
         }
-        
+
         public DataSet GetDataInDataSet(string query, string tablename = "")
         {
-            MySqlConnection con = null;
-            MySqlCommand cmd = null;
-            MySqlDataAdapter adaptar = null;
+            SQLiteConnection con = null;
+            SQLiteCommand cmd = null;
+            SQLiteDataAdapter adaptar = null;
             DataSet dsResult = new DataSet();
             try
             {
-                con = new MySqlConnection(constring);
+                con = new SQLiteConnection(constring);
 
                 if (con != null && con.State == ConnectionState.Closed)
                     con.Open();
-                cmd = new MySqlCommand
+                cmd = new SQLiteCommand
                 {
                     CommandText = query,
                     CommandType = System.Data.CommandType.Text,
                     Connection = con,
                     CommandTimeout = 50000
                 };
-                adaptar = new MySqlDataAdapter(cmd);
+                adaptar = new SQLiteDataAdapter(cmd);
                 if (tablename.Length > 0)
                     adaptar.Fill(dsResult, tablename);
                 else
