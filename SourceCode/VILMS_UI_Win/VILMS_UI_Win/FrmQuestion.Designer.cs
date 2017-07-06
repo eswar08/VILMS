@@ -1,4 +1,4 @@
-﻿namespace VILMS_UI_Win
+namespace VILMS_UI_Win
 {
     partial class FrmQuestion
     {
@@ -44,6 +44,7 @@
             this.txtAnswer.Size = new System.Drawing.Size(586, 80);
             this.txtAnswer.TabIndex = 3;
             this.txtAnswer.TextChanged += new System.EventHandler(this.txtAnswer_TextChanged);
+            this.txtAnswer.Enter += new System.EventHandler(this.txtAnswer_Enter);
             this.txtAnswer.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txtAnswer_KeyDown);
             // 
             // btnNext
