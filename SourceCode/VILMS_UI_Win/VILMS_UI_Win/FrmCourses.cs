@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -72,7 +72,7 @@ namespace VILMS_UI_Win
         {
             distitle = o_loginWindow.LoadTitles();
             LoadCourse();
-            grpCourse.Text = distitle[0];
+            grpCourse.Text = distitle[1];
         }
 
         private void lstCourses_KeyDown(object sender, KeyEventArgs e)
@@ -91,7 +91,7 @@ namespace VILMS_UI_Win
                     int key = (int)lstCourses.SelectedValue;
                     DisplayDiscription(key);
                 }
-                else if (e.KeyCode==Keys.Back || e.KeyCode == Keys.Escape)
+                else if (e.KeyCode == Keys.Back || e.KeyCode == Keys.Escape)
                 {
                     FrmLogin objFrmLogin = new FrmLogin();
                     this.Hide();
