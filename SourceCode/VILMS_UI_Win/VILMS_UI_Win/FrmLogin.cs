@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -18,11 +18,12 @@ namespace VILMS_UI_Win
         public FrmLogin()
         {
             InitializeComponent();
+            o_loginWindow = new BusinessLogOnWindow();
         }
         #endregion
 
         #region Variables
-        private BusinessLogOnWindow o_loginWindow = new BusinessLogOnWindow();
+        private BusinessLogOnWindow o_loginWindow = null;
         #endregion
 
         #region Methods
@@ -59,6 +60,7 @@ namespace VILMS_UI_Win
 
         private void btnlogin_Click(object sender, EventArgs e)
         {
+            string UserId = "0";
             if (string.IsNullOrEmpty(txtUsername.Text) || string.IsNullOrWhiteSpace(txtUsername.Text))
             {
                 LoadMessage("Information", "Please Enter User Name");
@@ -71,8 +73,9 @@ namespace VILMS_UI_Win
             }
             else
             {
-                if (o_loginWindow.IsValidUser(txtUsername.Text, txtPassword.Text)) //To Check Username Exist Or Not
+                if (o_loginWindow.IsValidUser(txtUsername.Text, txtPassword.Text, out UserId)) //To Check Username Exist Or Not
                 {
+                    Globals.UserId = UserId;
                     FrmCourses frmCourses = new FrmCourses();
                     this.Hide();
                     frmCourses.ShowDialog();
