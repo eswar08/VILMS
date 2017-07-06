@@ -26,7 +26,7 @@ namespace VILMS_UI_Win
         public FrmQuestion(Topics lobjTopics)
         {
             InitializeComponent();
-            cts = new CancellationTokenSource();  
+            cts = new CancellationTokenSource();
             objTopics = lobjTopics;
             CourseID = lobjTopics.CourseID.ToString();
             LessonID = lobjTopics.LessonID.ToString();
@@ -41,6 +41,7 @@ namespace VILMS_UI_Win
         string CourseID = string.Empty;
         string LessonID = string.Empty;
         string TopicID = string.Empty;
+        string QuestionType = string.Empty;
         int index = 0;
         int charindex = 0;
         string Typekey = "";
@@ -48,6 +49,7 @@ namespace VILMS_UI_Win
         string wrongkey = "";
         string Typedkey = "";
         string Correctkey = "";
+        string CorrectAnswerkey = "";
         string speak = string.Empty;
         string Answer = string.Empty;
         char[] Answerlist = null;
@@ -56,7 +58,8 @@ namespace VILMS_UI_Win
         int attempts = 0;
         string FeedBackCorrectAnswer = string.Empty;
         SpeechSynthesizer speaker = null;
-        CancellationTokenSource cts;  
+        CancellationTokenSource cts;
+        DateTime dtTimeSpent;
         #endregion
 
         #region Methods
@@ -84,17 +87,26 @@ namespace VILMS_UI_Win
                 Answer = QuestionsLiist[index].Answer;
                 FeedBackCorrectAnswer = QuestionsLiist[index].FeedBackCorrectAnswer;
                 attempts = Convert.ToInt16(QuestionsLiist[index].Attempts);
-                int i = 0;
-                Answerlist = new char[attempts * (Answer.Length + 1)];
-                for (int j = 0; j < attempts; j++)
+                QuestionType = QuestionsLiist[index].QuestionType;
+                if (QuestionsLiist[index].QuestionType == "Text")
                 {
-                    foreach (char c in Answer)
+                    int i = 0;
+                    Answerlist = new char[attempts * (Answer.Length + 1)];
+                    for (int j = 0; j < attempts; j++)
                     {
-                        Answerlist[i] = c;
+                        foreach (char c in Answer)
+                        {
+                            Answerlist[i] = c;
+                            i += 1;
+                        }
+                        Answerlist[i] = ' ';
                         i += 1;
                     }
-                    Answerlist[i] = ' ';
-                    i += 1;
+                }
+                else
+                {
+                    Answerlist = new char[1];
+                    Answerlist = Answer.ToCharArray();
                 }
                 charindex = 0;
                 txtAnswer.TextChanged -= txtAnswer_TextChanged;
@@ -110,7 +122,6 @@ namespace VILMS_UI_Win
             }
         }
 
-      
         public async Task<string> Speak(string speak)
         {
             SpeechSynthesizer ss = new SpeechSynthesizer();
@@ -132,6 +143,24 @@ namespace VILMS_UI_Win
             wrongkey = ConfigurationManager.AppSettings["wrongkey"];
             Typedkey = ConfigurationManager.AppSettings["Typedkey"];
             Correctkey = ConfigurationManager.AppSettings["Correctkey"];
+            CorrectAnswerkey = ConfigurationManager.AppSettings["CorrectAnswerkey"];
+        }
+
+        private void InsertUserAnswer(int index, string IsCorrect, string Marks, string Remarks)
+        {
+            try
+            {
+                TimeSpan ts = DateTime.Now.Subtract(dtTimeSpent);
+                int TimeSpent = ts.Seconds;
+                int noOfRowsaffected = 0;
+                string Query = "INSERT INTO t_user_answer(UserId,QuestionID,UserAnswer,IsCorrect,Marks,Remarks,TimeSpent,TimeUpdated)VALUES('";
+                Query += Globals.UserId + "','" + QuestionsLiist[index].QuestionID.ToString() + "','" + txtAnswer.Text + "','" + IsCorrect + "','" + Marks + "','" + Remarks + "','" + TimeSpent + "','" + DateTime.Now.ToString() + "');";
+                o_loginWindow.InsertUserAnswer(Query, out noOfRowsaffected);
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
         }
         #endregion
 
@@ -262,6 +291,7 @@ namespace VILMS_UI_Win
                         if (QuestionsLiist.Count > index)
                         {
                             //speaker.Speak(FeedBackCorrectAnswer);
+                            InsertUserAnswer(index, "1", "1", "Remarks");
                             await Task.Run(() => Speak(speak));
                             index += 1;
                             if (index == QuestionsLiist.Count)
@@ -275,10 +305,26 @@ namespace VILMS_UI_Win
                     if (Answerlist[charindex].ToString() == " ")
                         speak = wrongkey + Typekey + Spacekey;
                     else
-                        speak = wrongkey + Typekey + Answerlist[charindex].ToString();
+                    {
+                        if (QuestionType == "Text")
+                            speak = wrongkey + Typekey + Answerlist[charindex].ToString();
+                        else
+                            speak = wrongkey + CorrectAnswerkey;
+                    }
                     //speaker.Speak(speak);
                     await Task.Run(() => Speak(speak));
                 }
+            }
+            catch (Exception ex)
+            {
+            }
+        }
+
+        private void txtAnswer_Enter(object sender, EventArgs e)
+        {
+            try
+            {
+                dtTimeSpent = DateTime.Now;
             }
             catch (Exception ex)
             {
